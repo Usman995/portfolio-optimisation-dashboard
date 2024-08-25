@@ -1,117 +1,165 @@
 import React, { useState } from 'react';
-import './Dashboard.css'
-import StockChart from './StockChart';
+import './Dashboard.css';
+// import StockChart from './StockChart';
+import PortfolioPieChart from './PortfolioPieChart';
 import { fetchMarketData } from '../services/marketDataService';
 
+function Dashboard() {
+  const [assets, setAssets] = useState([
+    { ticker: '', amount: '', buyDate: new Date().toISOString().split('T')[0] },
+  ]);
+  const [marketData, setMarketData] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
+  const handleInputChange = (index, event) => {
+    const { name, value } = event.target;
+    const newAssets = [...assets];
+    newAssets[index][name] = value;
+    setAssets(newAssets);
+  };
 
-function getTodayDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-function Dashboard(){
-    const [marketData, setMarketData] = useState(null);
-    const [error, setError] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState({
+  const addAsset = () => {
+    setAssets([
+      ...assets,
+      {
         ticker: '',
-        buyDate: getTodayDate
-    });
+        amount: '',
+        buyDate: new Date().toISOString().split('T')[0],
+      },
+    ]);
+  };
 
-    const handleInputChange = (event) => {
-        const {name, value} = event.target;
-        setFormData(prevData => ({
-            ...prevData,
-            [name]: name === 'ticker' ? value.toUpperCase() : value
-        }));
+  const removeAsset = (index) => {
+    const newAssets = assets.filter((_, i) => i !== index);
+    setAssets(newAssets);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    setMarketData(null);
+    setShowResults(false);
+
+    try {
+      const totalValue = assets.reduce(
+        (sum, asset) => sum + Number(asset.amount),
+        0
+      );
+
+      const assetData = await Promise.all(
+        assets.map(async (asset) => {
+          const data = await fetchMarketData(asset.ticker, asset.buyDate);
+          return {
+            ...data,
+            amount: Number(asset.amount),
+            percentage: (Number(asset.amount) / totalValue) * 100,
+          };
+        })
+      );
+
+      setMarketData({
+        assets: assetData,
+        totalValue: totalValue,
+      });
+      setShowResults(true);
+    } catch (err) {
+      setError(`Failed to fetch data: ${err.message}`);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        setIsLoading(true);
-        setError(null);
-        setMarketData(null);
-        try {
-            console.log('submitting form with data:', formData)
-            const data = await fetchMarketData(formData.ticker, formData.buyDate);
-            if (data.resultsCount === 0) {
-                setError('No data available for the selected date range.');
-            } else {
-                setMarketData(data);
-            }
-        } catch (err) {
-            console.error('Detailed error in handleSubmit:', err);
-            setError(`Failed to fetch data: ${err.message}`);
-        }
-        finally{
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <div className='dashboard-container'>
-          <div className='dashboard-content'>
-            <div className='form-section'>
-              <h1>Market Ticker Data</h1>
-              <form onSubmit={handleSubmit} className="dashboard-form">
-                <div className="form-group">
-                  <label htmlFor="ticker">Stock Ticker:</label>
-                  <input
-                    type="text"
-                    id="ticker"
-                    name="ticker"
-                    value={formData.ticker}
-                    onChange={handleInputChange}
-                    placeholder="e.g., AAPL"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="buyDate">Buy Date:</label>
-                  <input
-                    type="date"
-                    id="buyDate"
-                    name="buyDate"
-                    value={formData.buyDate}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <button type="submit" className="submit-button">Fetch Data</button>
-              </form>
-            </div>
-            
-            <div className='results-section'>
-              {isLoading && <p>Loading...</p>}
-              {error && <p className="error">{error}</p>}
-              {marketData && (
-                <div>
-                  <h2>Data for {marketData.ticker}</h2>
-                  <StockChart data={marketData} />
-                  {marketData.results && marketData.results.length > 0 ? (
-                    <div>
-                      <p>Open: {marketData.results[0].o}</p>
-                      <p>Close: {marketData.results[marketData.results.length - 1].c}</p>
-                      <p>Highest: {Math.max(...marketData.results.map(r => r.h))}</p>
-                      <p>Lowest: {Math.min(...marketData.results.map(r => r.l))}</p>
-                    </div>
-                  ) : (
-                    <p>No results found for this date range.</p>
+  return (
+    <div className="dashboard-container">
+      <div className="content-wrapper">
+        <div className="dashboard-content">
+          <h1>Portfolio Optimization Dashboard</h1>
+          <div className="form-section">
+            <form onSubmit={handleSubmit} className="dashboard-form">
+              {assets.map((asset, index) => (
+                <div key={index} className="asset-input">
+                  <div className="form-group">
+                    <label htmlFor={`ticker-${index}`}>Stock Ticker:</label>
+                    <input
+                      type="text"
+                      id={`ticker-${index}`}
+                      name="ticker"
+                      value={asset.ticker}
+                      onChange={(e) => handleInputChange(index, e)}
+                      placeholder="e.g., AAPL"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor={`amount-${index}`}>
+                      Amount Invested ($):
+                    </label>
+                    <input
+                      type="number"
+                      id={`amount-${index}`}
+                      name="amount"
+                      value={asset.amount}
+                      onChange={(e) => handleInputChange(index, e)}
+                      placeholder="e.g., 1000"
+                      required
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor={`buyDate-${index}`}>Buy Date:</label>
+                    <input
+                      type="date"
+                      id={`buyDate-${index}`}
+                      name="buyDate"
+                      value={asset.buyDate}
+                      onChange={(e) => handleInputChange(index, e)}
+                      required
+                    />
+                  </div>
+                  {assets.length > 1 && (
+                    <button type="button" onClick={() => removeAsset(index)}>
+                      Remove
+                    </button>
                   )}
-                  <details>
-                    <summary>Raw Data</summary>
-                    <pre>{JSON.stringify(marketData, null, 2)}</pre>
-                  </details>
                 </div>
-              )}
-            </div>
+              ))}
+              <button type="button" onClick={addAsset}>
+                Add Asset
+              </button>
+              <button type="submit" className="submit-button">
+                Display Portfolio
+              </button>
+            </form>
           </div>
         </div>
-      );
+
+        <div className={`results-container ${showResults ? 'show' : ''}`}>
+          {isLoading && <p>Loading...</p>}
+          {error && <p className="error-message">{error}</p>}
+          {marketData && (
+            <div className="portfolio-summary">
+              <h2>Portfolio Summary</h2>
+              <PortfolioPieChart data={marketData} />
+              <ul>
+                {marketData.assets.map((asset, index) => (
+                  <li key={index}>
+                    {asset.symbol}: ${asset.amount.toFixed(2)} (
+                    {asset.percentage.toFixed(2)}%) - Current Price: $
+                    {asset.close}
+                  </li>
+                ))}
+              </ul>
+              <p>Total Portfolio Value: ${marketData.totalValue.toFixed(2)}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default Dashboard
+export default Dashboard;
