@@ -1,38 +1,45 @@
+/* App.css */
+
+@font-face {
+  font-family: 'MyNotionCopy';
+  src: url('./fonts/66f30814ff6d7cdf.p.woff2') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
 .App {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #0a0a0a;
+  color: white; /* This sets the default text color to white for all elements */
+  font-family: 'MyNotionCopy', sans-serif;
+}
+
+h1 {
+  font-weight: normal;
+  font-size: 2.5rem;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h3 {
+  font-weight: normal;
+  font-size: 1.5rem;
+  margin-top: 1rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+pre {
+  background-color: #1a1a1a; /* Slightly lighter than the background for contrast */
+  padding: 1rem;
+  border-radius: 4px;
+  white-space: pre-wrap; /* This allows the text to wrap */
+  word-break: break-all; /* This prevents horizontal scrolling */
 }

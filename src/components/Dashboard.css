@@ -1,0 +1,98 @@
+body {
+    background-color: #0a0a0a;
+    color: #ffffff;
+    font-family: 'MyNotionCopy', Arial, sans-serif;
+}
+  
+.dashboard-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+}
+  
+.dashboard-content {
+    display: flex;
+    gap: 20px;
+    background-color: #111111;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    padding: 40px;
+    max-width: 1200px;
+    width: 100%;
+}
+
+form-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+.results-section {
+    align-items: center;
+    flex: 2;
+    min-width: 300px;
+}
+
+.results-section h2{
+    align-items: center;
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .dashboard-content {
+      flex-direction: column;
+    }
+    
+    .form-section, .results-section {
+      width: 100%;
+    }
+  }
+.description {
+    color: #999999;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.dashboard-form {
+/* ... existing form styles */
+    border-color: #333333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ffffff;
+}
+
+.form-group input {
+    width: 70%;
+    padding: 10px;
+    background-color: #222222;
+    border: 1px solid #444444;
+    border-radius: 4px;
+    color: #ffffff;
+}
+
+.submit-button {
+    width: 50%;
+    padding: 12px;
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.submit-button:hover {
+    background-color: white;
+}
